@@ -139,7 +139,9 @@ M.attach_autocommands = function(bufnr)
     buffer = bufnr,
     group = group,
     callback = function()
-      window.update_position(0, 0)
+      vim.schedule(function()
+        window.update_position(0, 0)
+      end)
     end,
   })
   vim.api.nvim_create_autocmd("BufUnload", {

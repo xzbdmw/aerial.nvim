@@ -29,7 +29,7 @@ local function _get_current_lnum(winid)
 end
 
 ---@return integer?
-local function get_target_win()
+function M.get_target_win()
   local bufnr, _ = util.get_buffers()
   local winid
   if util.is_aerial_buffer() then
@@ -60,7 +60,7 @@ end
 M.up = function(direction, count)
   direction = direction or -1
   count = count or 1
-  local winid = get_target_win()
+  local winid = M.get_target_win()
   if not winid then
     error("Could not find destination window")
     return
@@ -145,7 +145,7 @@ end
 ---@param step? integer
 M.next = function(step)
   step = step or 1
-  local winid = get_target_win()
+  local winid = M.get_target_win()
   if not winid then
     error("Could not find destination window")
     return
@@ -183,7 +183,7 @@ M.select = function(opts)
   })
   local winid = opts.winid
   if not winid then
-    winid = get_target_win()
+    winid = M.get_target_win()
   end
   if not winid then
     if not opts.quiet then

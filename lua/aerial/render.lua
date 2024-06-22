@@ -149,7 +149,8 @@ M.update_aerial_buffer = function(buf)
     else
       spacing = string.rep("  ", item.level)
     end
-    local text = util.remove_newlines(string.format("%s%s %s", spacing, kind, item.name))
+    local text =
+      util.remove_newlines(string.format("%s%s %s", spacing, kind:sub(2, #kind), item.name))
     local text_cols = vim.api.nvim_strwidth(text)
     local icon_hl = highlight.get_highlight(item, true, collapsed)
     if icon_hl then

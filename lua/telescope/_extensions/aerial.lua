@@ -3,7 +3,8 @@ local entry_display = require("telescope.pickers.entry_display")
 local finders = require("telescope.finders")
 local pickers = require("telescope.pickers")
 local telescope = require("telescope")
-
+local hl_cache = {}
+local buf_cache = {}
 local ext_config = {
   show_lines = true,
   show_nesting = {
@@ -37,40 +38,54 @@ local function aerial_picker(opts)
   elseif not data.has_symbols(0) then
     backend.fetch_symbols_sync(0, opts)
   end
-
-  local layout
-  if ext_config.show_lines then
-    layout = {
-      { width = 4 },
-      { width = 30 },
-      { remaining = true },
-    }
-  else
-    layout = {
-      { width = 4 },
-      { remaining = true },
-    }
-  end
-  local displayer = opts.displayer
-    or entry_display.create({
-      separator = " ",
-      items = layout,
-    })
-
   local function make_display(entry)
     local item = entry.value
+
+    local lnum = item.selection_range and item.selection_range.lnum or item.lnum
+    local col = item.selection_range and item.selection_range.col or item.col
+
+    local indent = string.rep(" ", item.level * 2)
     local icon = config.get_icon(bufnr, item.kind)
-    local icon_hl = highlight.get_highlight(item, true, false) or "NONE"
+    icon = "[" .. icon .. "]"
     local name_hl = highlight.get_highlight(item, false, false) or "NONE"
+    local icon_hl = highlight.get_highlight(item, true, false) or "NONE"
+
+    -- if buf_cache[bufnr] == nil then
+    --   buf_cache[bufnr] = {}
+    -- end
+    -- if buf_cache[bufnr][item.kind .. entry.name] == nil then
+    --   local captures = vim.treesitter.get_captures_at_pos(bufnr, lnum - 1, col)
+    --   local buf_highlighter = vim.treesitter.highlighter.active[bufnr]
+    --   local state = buf_highlighter._highlight_states
+    --   local capture_name = state.highlighter_query:query().captures[capture]
+    --   local name
+    --   if captures ~= nil and #captures ~= 0 then
+    --     name = captures[#captures].capture
+    --   end
+    --   if name ~= nil then
+    --     name_hl = "@" .. name .. "." .. vim.bo[bufnr].filetype
+    --     buf_cache[bufnr][item.kind .. entry.name] = name_hl
+    --   end
+    -- end
+
     local columns = {
+      { indent, icon_hl },
       { icon, icon_hl },
       { entry.name, name_hl },
     }
-    if ext_config.show_lines then
-      local text = vim.api.nvim_buf_get_lines(bufnr, item.lnum - 1, item.lnum, false)[1] or ""
-      text = vim.trim(text)
-      table.insert(columns, text)
-    end
+
+    local layout = {
+      { width = #indent },
+      { width = 6 },
+      { remaining = true },
+    }
+
+    local displayer = opts.displayer
+      or entry_display.create({
+        separator = "",
+        items = layout,
+      })
+
     return displayer(columns)
   end
 

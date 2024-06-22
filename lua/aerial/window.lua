@@ -35,6 +35,13 @@ local function create_aerial_buffer(bufnr)
         end
         if config.autojump and vim.b[aer_bufnr].rendered then
           require("aerial.navigation").select({ jump = false, quiet = true })
+          local win = require("aerial.navigation").get_target_win()
+          pcall(function()
+            ---@diagnostic disable-next-line: undefined-field
+            _G.indent_update(win)
+            ---@diagnostic disable-next-line: param-type-mismatch
+            require("treesitter-context").context_force_update(vim.api.nvim_win_get_buf(win), win)
+          end)
         end
       end,
     })
@@ -521,6 +528,9 @@ M.update_position = function(winids, last_focused_win)
       -- invalid.
       if last_position and num_lines >= last_position.lnum then
         vim.api.nvim_win_set_cursor(aer_winid, { last_position.lnum, 0 })
+        vim.api.nvim_win_call(aer_winid, function()
+          vim.cmd("norm! zz")
+        end)
       end
     end
   end

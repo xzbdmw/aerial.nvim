@@ -164,8 +164,10 @@ local function create_autocmds()
     pattern = "*",
     group = group,
     callback = function()
-      do_setup()
-      require("aerial.autocommands").on_enter_buffer()
+      vim.defer_fn(function()
+        do_setup()
+        require("aerial.autocommands").on_enter_buffer()
+      end, 100)
     end,
   })
   vim.api.nvim_create_autocmd("LspAttach", {
@@ -173,9 +175,11 @@ local function create_autocmds()
     pattern = "*",
     group = group,
     callback = function(args)
-      do_setup()
-      local client = vim.lsp.get_client_by_id(args.data.client_id)
-      require("aerial.backends.lsp").on_attach(client, args.buf)
+      vim.defer_fn(function()
+        do_setup()
+        local client = vim.lsp.get_client_by_id(args.data.client_id)
+        require("aerial.backends.lsp").on_attach(client, args.buf)
+      end, 100)
     end,
   })
   vim.api.nvim_create_autocmd("LspDetach", {
